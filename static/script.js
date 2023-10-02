@@ -5,12 +5,34 @@ let fullData;
 d3.json("/data").then((data) => {
     //console.log(data);
     fullData = data;
+    const playerNames = data.map(player => player.fullNameForSearch);
     const teamNames = [...new Set(data.map(player => player.team))];
-    console.log(teamNames);
     populateTeamDropdown(teamNames);
     const topByTeam = getTopTenByTeam(fullData, teamNames[0]);
     teamBarChart(topByTeam);
+    populatePlayer1Dropdown(playerNames)
+    
+    $("#selPlayer1").selectize();
+    $("#selTeam").selectize();
 });
+
+function populatePlayer1Dropdown(playerNames) {
+
+    const dropdown = d3.select("#selPlayer1").node();
+    // const firstElmnt = document.createElement("option");
+
+    // firstElmnt.val = "";
+    // firstElmnt.textContent = "";
+    // dropdown.appendChild(firstElmnt);
+
+    for (let i = 0; i < playerNames.length; i++) {
+        const opt = playerNames[i];
+        const elmnt = document.createElement("option");
+        elmnt.textContent = opt;
+        elmnt.value = opt;
+        dropdown.appendChild(elmnt);
+    }
+}
 
 function populateTeamDropdown(teamNames) {
     
@@ -62,7 +84,10 @@ function teamBarChart(data) {
     const layout = {
         title: `<b>${data[0].team} Top 10 Overall Players</b>`,
         displayModeBar: false,
-        displaylogo: false
+        displaylogo: false,
+        yaxis: {
+            range: [0, 100],
+        }
     };
     const config = {
             displayModeBar: false,
@@ -92,24 +117,36 @@ function animateTeamBarChart(data) {
         }
     }
 
-    const animation = {
-        layout: {
-            title: `<b>${data[0].team} Top 10 Overall Players</b>`,
+    const updatedLayout = {
+        title: `<b>${data[0].team} Top 10 Overall Players</b>`,
+        xaxis: {
+            tickvals: names,
+            ticktext: names,
         },
-        config:{
-            displayModeBar: false, // this is the line that hides the bar.
-        },
-        data: [updatedTrace],
-        traces: [0],
-    };
+        yaxis: {
+            range: [0, 100],
+        }
+    }
 
-    Plotly.animate("teamBarChart", animation, { 
+    const animation = {
         transition: { 
             duration: 1000 
-        }, frame: { 
+        }, 
+        frame: { 
             duration: 1000, 
             redraw: true 
         } 
+    };
+
+    Plotly.update('teamBarChart', {
+        data: updatedTrace,
+        layout: updatedLayout,
+    })
+    .then(() => {
+        Plotly.animate('teamBarChart', {
+            data: [updatedTrace],
+            layout: updatedLayout
+        }, animation);
     });
 }
 
