@@ -92,24 +92,33 @@ function animateTeamBarChart(data) {
         }
     }
 
-    const animation = {
-        layout: {
-            title: `<b>${data[0].team} Top 10 Overall Players</b>`,
-        },
-        config:{
-            displayModeBar: false, // this is the line that hides the bar.
-        },
-        data: [updatedTrace],
-        traces: [0],
-    };
+    const updatedLayout = {
+        title: `<b>${data[0].team} Top 10 Overall Players</b>`,
+        xaxis: {
+            tickvals: names,
+            ticktext: names,
+        }
+    }
 
-    Plotly.animate("teamBarChart", animation, { 
+    const animation = {
         transition: { 
             duration: 1000 
-        }, frame: { 
+        }, 
+        frame: { 
             duration: 1000, 
             redraw: true 
         } 
+    };
+
+    Plotly.update('teamBarChart', {
+        data: updatedTrace,
+        layout: updatedLayout,
+    })
+    .then(() => {
+        Plotly.animate('teamBarChart', {
+            data: [updatedTrace],
+            layout: updatedLayout
+        }, animation);
     });
 }
 
